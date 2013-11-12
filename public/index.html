@@ -1,7 +1,6 @@
 
 <!DOCTYPE html>
-<!-- <html ng-app='canvio' lang="en"> -->
-<html lang="en">
+<html ng-app='canvio' lang="en">
   <head>
     <title>canva</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,45 +13,92 @@
   <body>
 
     <div class='container'>
-      <h1>canva</h1>
 
-      <form id='settings_form' class='form-inline'>
-        <div class='form-group'>
-            <input type="text" id='width' value='300' class="form-control" placeholder="width">
-        </div>
-        x
-        <div class='form-group'>
-            <input type="text" id='height' value='250' class="form-control" placeholder="height">
-        </div>
-        <button id='settings_form_button' type='button' class='btn btn-primary'>Reset</button>
-      </form>
+      <div ng-controller="CanvasControl">
+        <h1>Canvio</h1>
+        <div class='row'>
+          <div id='tag_input_wrapper' class="pull-left">
+            <form id='settings_form' class='form-inline' ng-init="width=300; height=250; fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'">
+              <div class="btn-group" id='mode_select'>
+                <button ng-click="set_mode('rectangle')" type="button" class="btn btn-default" ng-class="{active:mode=='rectangle'}"><i class='glyphicon glyphicon-stop'></i></button>
+                <button ng-click="set_mode('circle')" type="button" class="btn btn-default" ng-class="{active:mode=='circle'}"><i class='glyphicon glyphicon-record'></i></button>
+                <button ng-click="set_mode('text')" type="button" class="btn btn-default" ng-class="{active:mode=='text'}"><i class='glyphicon glyphicon-font'></i></button>
+                <button ng-click="set_mode('img')" type="button" class="btn btn-default" ng-class="{active:mode=='img'}"><i class='glyphicon glyphicon-picture'></i></button>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input ng-model="fill_enabled" type="checkbox"> Fill
+                </label>
+              </div>
+              <ui-colorpicker ng-model="fill_color"></ui-colorpicker>
 
-      <div id='tag_input_wrapper'>
-        <div class="btn-group" id='mode_select'>
-          <button type="button" class="btn btn-default">rectangle</button>
-          <button type="button" class="btn btn-default">circle</button>
-          <button type="button" class="btn btn-default">text</button>
-        </div>
-        <input id='color' type='color' name='color' />
-        <div class="btn-group" id='fill_select'>
-          <button type="button" class="btn btn-default">fill</button>
-          <button type="button" class="btn btn-default">no-fill</button>
-        </div>
-        <div id='tag_input'>
+              <div class="checkbox">
+                <label>
+                  <input ng-model="stroke_enabled" type="checkbox"> Stroke
+                </label>
+              </div>
+              <ui-colorpicker ng-model="stroke_color"></ui-colorpicker>
 
+              <div class='form-group'>
+                  <input ng-model="width" type="text" id='width' value='300' class="form-control" placeholder="width">
+              </div>
+              x
+              <div class='form-group'>
+                  <input ng-model="height" type="text" id='height' value='250' class="form-control" placeholder="height">
+              </div>
+
+              <button ng-click="draw()" id='settings_form_button' type='button' class='btn btn-primary'>Draw</button>
+              <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-warning'>Clear</button>
+            </form>
+
+            <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
+              <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)">
+              </canvas>
+            </div>
+          </div>
         </div>
+
+        <div class='row' id='element_list'>
+          <div ng-repeat="element in get_elements()" class='element_description'>
+            <h4>{{ element.type }}</h4>
+            <form class='form-inline'>
+              x:
+              <div class='form-group'>
+                <input ng-model="element.x" type="text" class="form-control" placeholder="x">
+              </div>
+              y:
+              <div class='form-group'>
+                <input ng-model="element.y" type="text" class="form-control" placeholder="x">
+              </div>
+              <span ng-switch on="element.type">
+                <span ng-switch-when="rectangle">                    
+                  w:
+                  <div class='form-group'>
+                    <input ng-model="element.width" type="text" class="form-control" placeholder="x">
+                  </div>
+                  h:
+                  <div class='form-group'>
+                    <input ng-model="element.height" type="text" class="form-control" placeholder="x">
+                  </div>
+                </span>
+                <span ng-switch-when="circle">                    
+                  r:
+                  <div class='form-group'>
+                    <input ng-model="element.radius" type="text" class="form-control" placeholder="x">
+                  </div>
+                </span>
+              </span>
+              <button ng-click="remove_element($index)" id='settings_form_button' type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
+            </form>
+          </div>
+        </div>
+
+        <div class='row'>
+          <pre class='well' id='meta'>{{ debug() }}</pre>
+        </div>
+
       </div>
-
-      <pre class='well' id='meta'>
-        hello
-      </pre>
-
-<!--       <div ng-controller="CanvasControl">
-        <p>{{ status() }}</p>
-      </div> -->
     </div>
-
-
 
     <script src="/lib/jquery/jquery.min.js"></script>
     <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
