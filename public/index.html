@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<!-- <html ng-app='canvio' lang="en"> -->
+<html lang="en">
+  <head>
+    <title>canva</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/lib/spectrum/spectrum.css" rel="stylesheet" media="screen">
+    <link href="/css/style.css" rel="stylesheet" media="screen">
+
+
+  </head>
+  <body>
+
+    <div class='container'>
+      <h1>canva</h1>
+
+      <form id='settings_form' class='form-inline'>
+        <div class='form-group'>
+            <input type="text" id='width' value='300' class="form-control" placeholder="width">
+        </div>
+        x
+        <div class='form-group'>
+            <input type="text" id='height' value='250' class="form-control" placeholder="height">
+        </div>
+        <button id='settings_form_button' type='button' class='btn btn-primary'>Reset</button>
+      </form>
+
+      <div id='tag_input_wrapper'>
+        <div class="btn-group" id='mode_select'>
+          <button type="button" class="btn btn-default">rectangle</button>
+          <button type="button" class="btn btn-default">circle</button>
+          <button type="button" class="btn btn-default">text</button>
+        </div>
+        <input id='color' type='color' name='color' />
+        <div class="btn-group" id='fill_select'>
+          <button type="button" class="btn btn-default">fill</button>
+          <button type="button" class="btn btn-default">no-fill</button>
+        </div>
+        <div id='tag_input'>
+
+        </div>
+      </div>
+
+      <pre class='well' id='meta'>
+        hello
+      </pre>
+
+<!--       <div ng-controller="CanvasControl">
+        <p>{{ status() }}</p>
+      </div> -->
+    </div>
+
+
+
+    <script src="/lib/jquery/jquery.min.js"></script>
+    <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/lib/spectrum/spectrum.js"></script>
+    <script src="/lib/angular/angular.min.js"></script>
+    <script src="/js/canvio.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
