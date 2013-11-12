@@ -48,7 +48,7 @@
               </div>
 
               <button ng-click="draw()" id='settings_form_button' type='button' class='btn btn-primary'>Draw</button>
-              <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-warning'>Clear</button>
+              <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-danger'>Clear</button>
             </form>
 
             <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
@@ -59,7 +59,7 @@
         </div>
 
         <div class='row' id='element_list'>
-          <div ng-repeat="element in get_elements()" class='element_description'>
+          <div ng-repeat="element in get_elements() | reverse" class='element_description'>
             <h4>{{ element.type }}</h4>
             <form class='form-inline'>
               x:
@@ -71,7 +71,7 @@
                 <input ng-model="element.y" type="text" class="form-control" placeholder="x">
               </div>
               <span ng-switch on="element.type">
-                <span ng-switch-when="rectangle">                    
+                <span ng-switch-when="rectangle">
                   w:
                   <div class='form-group'>
                     <input ng-model="element.width" type="text" class="form-control" placeholder="x">
@@ -81,14 +81,42 @@
                     <input ng-model="element.height" type="text" class="form-control" placeholder="x">
                   </div>
                 </span>
-                <span ng-switch-when="circle">                    
+                <span ng-switch-when="circle">
                   r:
                   <div class='form-group'>
                     <input ng-model="element.radius" type="text" class="form-control" placeholder="x">
                   </div>
                 </span>
+                <span ng-switch-when="text">
+                  text:
+                  <div class='form-group'>
+                    <input ng-model="element.text" type="text" class="form-control" placeholder="x">
+                  </div>
+                  font_size:
+                  <div class='form-group'>
+                    <input ng-model="element.font_size" type="text" class="form-control" placeholder="x">
+                  </div>
+                  font:
+                  <div class='form-group'>
+                    <input ng-model="element.font" type="text" class="form-control" placeholder="x">
+                  </div>
+                </span>
+                <span ng-switch-when="img">
+                  url:
+                  <div class='form-group'>
+                    <input ng-model="element.url" type="text" class="form-control" placeholder="x">
+                  </div>
+                  width:
+                  <div class='form-group'>
+                    <input ng-model="element.width" type="text" class="form-control" placeholder="x">
+                  </div>
+                  height:
+                  <div class='form-group'>
+                    <input ng-model="element.height" type="text" class="form-control" placeholder="x">
+                  </div>
+                </span>
               </span>
-              <button ng-click="remove_element($index)" id='settings_form_button' type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
+              <button ng-click="remove_element(elements.length - $index - 1)" id='settings_form_button' type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
             </form>
           </div>
         </div>
@@ -104,7 +132,6 @@
     <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="/lib/spectrum/spectrum.js"></script>
     <script src="/lib/angular/angular.min.js"></script>
-    <script src="/js/canvio.js"></script>
     <script src="/js/app.js"></script>
   </body>
 </html>

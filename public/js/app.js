@@ -29,7 +29,13 @@ canvio.directive('uiColorpicker', function() {
     };
 });
 
-function CanvasControl($scope){
+canvio.filter('reverse', function() {
+  return function(items) {
+    return items.slice().reverse();
+  };
+});
+
+canvio.controller('CanvasControl', function($scope){
 
   $scope.elements = [];
   var canvas = document.getElementById('tag_output');
@@ -93,6 +99,27 @@ function CanvasControl($scope){
           y: $scope.start_point.y,
           radius: Math.floor(Math.sqrt(($scope.end_point.x - $scope.start_point.x)*($scope.end_point.x - $scope.start_point.x)+($scope.end_point.y - $scope.start_point.y)*($scope.end_point.y - $scope.start_point.y)))
         };
+        break;
+      case 'text':
+        elem_data = {
+          type: 'text',
+          x: $scope.start_point.x,
+          y: $scope.start_point.y,
+          text: "Insert Text",
+          font_size: "20px",
+          font: "Arial"
+        };
+        break;
+      case 'img':
+        elem_data = {
+          type: 'img',
+          x: $scope.start_point.x,
+          y: $scope.start_point.y,
+          url: "http://cdn.meme.li/i/pk39x.jpg",
+          width: $scope.end_point.x - $scope.start_point.x,
+          height: $scope.end_point.y - $scope.start_point.y
+        };
+        break;
       default:
         console.log("Add element not caught");
     }
@@ -151,6 +178,24 @@ function CanvasControl($scope){
             context.stroke();
           }
           break;
+        case 'text':
+          context.font = elem.font_size + " " + elem.font;
+          if (elem.fill){
+            context.fillText(elem.text, elem.x, elem.y);
+          }
+          if (elem.stroke){
+            context.strokeText(elem.text, elem.x, elem.y);
+          }
+          break;
+        case 'img':
+          var img = new Image;
+          img.onload = function(){
+            context.drawImage(img, elem.x, elem.y, elem.width, elem.height);
+          };
+          img.src = elem.url;
+          context.drawImage(img, elem.x, elem.y, elem.width, elem.height);
+
+          break;
         default:
           console.log("Draw not caught");
       }
@@ -162,4 +207,4 @@ function CanvasControl($scope){
     $scope.elements.splice(index, 1);
     $scope.draw();
   };
-}
+});
