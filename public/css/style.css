@@ -8,6 +8,10 @@
 .element_description{
 	border: 1px solid #CCC;
 	margin: 12px 0;
-	padding: 0 12px 12px 12px;
+	padding: 12px;
 	border-radius: 3px;
+}
+.element_name_input{
+	margin: 7px;
+	width: 300px;
 }

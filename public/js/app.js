@@ -1,5 +1,16 @@
 var canvio = angular.module('canvio', []);
 
+var array_move = function (array, old_index, new_index) {
+    if (new_index >= array.length) {
+        var k = new_index - array.length;
+        while ((k--) + 1) {
+            array.push(undefined);
+        }
+    }
+    array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+    return array;
+};
+
 canvio.directive('uiColorpicker', function() {
     return {
         restrict: 'E',
@@ -205,6 +216,16 @@ canvio.controller('CanvasControl', function($scope){
   $scope.remove_element = function(index){
     console.log(index);
     $scope.elements.splice(index, 1);
+    $scope.draw();
+  };
+
+  $scope.move_back_element = function(index){
+    $scope.elements = array_move($scope.elements, index, index - 1);
+    $scope.draw();
+  };
+
+  $scope.move_up_element = function(index){
+    $scope.elements = array_move($scope.elements, index, index + 1);
     $scope.draw();
   };
 });

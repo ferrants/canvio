@@ -60,7 +60,7 @@
 
         <div class='row' id='element_list'>
           <div ng-repeat="element in get_elements() | reverse" class='element_description'>
-            <h4>{{ element.type }}</h4>
+            <input ng-model="element.name" type="text" class="form-control element_name_input" placeholder="{{ element.type }} name">
             <form class='form-inline'>
               x:
               <div class='form-group'>
@@ -116,7 +116,9 @@
                   </div>
                 </span>
               </span>
-              <button ng-click="remove_element(elements.length - $index - 1)" id='settings_form_button' type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
+              <button ng-click="move_back_element(elements.length - $index - 1)" ng-class="{disabled:$last}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-down'></i></button>
+              <button ng-click="move_up_element(elements.length - $index - 1)" ng-class="{disabled:$first}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-up'></i></button>
+              <button ng-click="remove_element(elements.length - $index - 1)" type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
             </form>
           </div>
         </div>
