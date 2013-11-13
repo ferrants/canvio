@@ -24,6 +24,7 @@ canvio.directive('uiColorpicker', function() {
                 color: ngModel.$viewValue,
                 showInput: true,
                 showButtons: false,
+                preferredFormat: "hex",
                 change: function(color) {
                     scope.$apply(function() {
                       ngModel.$setViewValue(color.toHexString());
@@ -48,7 +49,21 @@ canvio.filter('reverse', function() {
 
 canvio.controller('CanvasControl', function($scope){
 
-  $scope.elements = [];
+  $scope.width = 300;
+  $scope.height = 250;
+  $scope.commands = [];
+  $scope.movable_element = false;
+  $scope.elements = [
+    {
+      name: 'background',
+      type: 'rectangle',
+      x: 0,
+      y: 0,
+      width: $scope.width,
+      height: $scope.height,
+      fill: '#ffffff'
+    }
+  ];
   var canvas = document.getElementById('tag_output');
   var context = canvas.getContext('2d');
 
@@ -70,12 +85,14 @@ canvio.controller('CanvasControl', function($scope){
       width: $scope.width,
       height: $scope.height,
       mode: $scope.mode,
-      elements: $scope.elements
+      elements: $scope.elements,
+      commands: $scope.commands
     }, undefined, 2);
   };
   
   $scope.mousedown = function(ev){
     console.log(ev);
+    ev.originalEvent.preventDefault();
     $scope.start_point = {x: ev.offsetX, y: ev.offsetY};
   };
   
@@ -152,65 +169,66 @@ canvio.controller('CanvasControl', function($scope){
 
   $scope.draw = function(){
     context.clearRect(0 ,0 , $scope.width, $scope.height);
+    var commands = [];
     for (var i in $scope.elements){
       var elem = $scope.elements[i];
       console.log(elem);
 
       if (elem.fill){
-        context.fillStyle = elem.fill;
+        commands.push("context.fillStyle = '" + elem.fill + "'");
       }else{
-        context.fillStyle = '#000000';
+        commands.push("context.fillStyle = '#000000'");
       }
 
       if (elem.stroke){
-        context.strokeStyle = elem.stroke;
+        commands.push("context.strokeStyle = '" + elem.stroke + "'");
       }else{
-        context.strokeStyle = '#000000';
+        commands.push("context.strokeStyle = '#000000'");
       }
 
 
       switch (elem.type){
         case 'rectangle':
-          context.beginPath();
+          commands.push("context.beginPath()");
           if (elem.fill){
-            context.fillRect(elem.x, elem.y, elem.width, elem.height);
+            commands.push("context.fillRect(" + elem.x + "," + elem.y + "," + elem.width + "," + elem.height + ")");
           }
           if (elem.stroke){
-            context.strokeRect(elem.x, elem.y, elem.width, elem.height);
+            commands.push("context.strokeRect(" + elem.x + ", " + elem.y + ", " + elem.width + ", " + elem.height + ")");
           }
           break;
         case 'circle':
-          context.beginPath();
-          context.arc(elem.x, elem.y, elem.radius, 0, 2*Math.PI);
+          commands.push("context.beginPath()");
+          commands.push("context.arc(" + elem.x + ", " + elem.y + ", " + elem.radius + ", 0, 2*Math.PI)");
           if (elem.fill){
-            context.fill();
+            commands.push("context.fill()");
           }
           if (elem.stroke){
-            context.stroke();
+            commands.push("context.stroke()");
           }
           break;
         case 'text':
-          context.font = elem.font_size + " " + elem.font;
+          commands.push("context.font = '" + elem.font_size + " " + elem.font + "'");
           if (elem.fill){
-            context.fillText(elem.text, elem.x, elem.y);
+            commands.push("context.fillText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
           }
           if (elem.stroke){
-            context.strokeText(elem.text, elem.x, elem.y);
+            commands.push("context.strokeText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
           }
           break;
         case 'img':
-          var img = new Image;
-          img.onload = function(){
-            context.drawImage(img, elem.x, elem.y, elem.width, elem.height);
-          };
-          img.src = elem.url;
-          context.drawImage(img, elem.x, elem.y, elem.width, elem.height);
+          commands.push("var img = new Image");
+          commands.push("img.src = '" + elem.url + "'");
+          commands.push("context.drawImage(img, " + elem.x + ", " + elem.y + ", " + elem.width + ", " + elem.height + ")");
 
           break;
         default:
           console.log("Draw not caught");
       }
     }
+    console.log(commands);
+    eval(commands.join(';'));
+    $scope.commands = commands;
   };
 
   $scope.remove_element = function(index){
@@ -227,5 +245,14 @@ canvio.controller('CanvasControl', function($scope){
   $scope.move_up_element = function(index){
     $scope.elements = array_move($scope.elements, index, index + 1);
     $scope.draw();
+  };
+
+  $scope.toggle_movable = function(index){
+    console.log("Setting movable of " + index);
+    if (index === $scope.movable_element){
+      $scope.movable_element = false;
+    }else{
+      $scope.movable_element = index;
+    }
   };
 });

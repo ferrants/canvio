@@ -3,7 +3,8 @@
 	padding: 20px;
 }
 #tag_input{
-	background: white;
+	background: #eee;
+	margin: 10px 0;
 }
 .element_description{
 	border: 1px solid #CCC;
@@ -11,7 +12,16 @@
 	padding: 12px;
 	border-radius: 3px;
 }
+.element_description.movable{
+	background-color: #eeeeff;
+}
 .element_name_input{
 	margin: 7px;
 	width: 300px;
+}
+canvas{
+	cursor: crosshair;
+}
+canvas.movable{
+	cursor: move;
 }

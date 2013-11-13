@@ -18,7 +18,7 @@
         <h1>Canvio</h1>
         <div class='row'>
           <div id='tag_input_wrapper' class="pull-left">
-            <form id='settings_form' class='form-inline' ng-init="width=300; height=250; fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'">
+            <form id='settings_form' class='form-inline' ng-init="fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'">
               <div class="btn-group" id='mode_select'>
                 <button ng-click="set_mode('rectangle')" type="button" class="btn btn-default" ng-class="{active:mode=='rectangle'}"><i class='glyphicon glyphicon-stop'></i></button>
                 <button ng-click="set_mode('circle')" type="button" class="btn btn-default" ng-class="{active:mode=='circle'}"><i class='glyphicon glyphicon-record'></i></button>
@@ -52,14 +52,14 @@
             </form>
 
             <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
-              <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)">
+              <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)" ng-class="{movable:movable_element !== false}">
               </canvas>
             </div>
           </div>
         </div>
-
+        <h3>Layers</h3>
         <div class='row' id='element_list'>
-          <div ng-repeat="element in get_elements() | reverse" class='element_description'>
+          <div ng-repeat="element in get_elements() | reverse" class='element_description' ng-class="{movable:movable_element === elements.length - $index - 1}">
             <input ng-model="element.name" type="text" class="form-control element_name_input" placeholder="{{ element.type }} name">
             <form class='form-inline'>
               x:
@@ -116,13 +116,16 @@
                   </div>
                 </span>
               </span>
+              <ui-colorpicker ng-model="element.fill"></ui-colorpicker>
+              <ui-colorpicker ng-model="element.stroke"></ui-colorpicker>
+              <button ng-click="toggle_movable(elements.length - $index - 1)" type='button' class='btn'><i class='glyphicon glyphicon-move'></i></button>
               <button ng-click="move_back_element(elements.length - $index - 1)" ng-class="{disabled:$last}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-down'></i></button>
               <button ng-click="move_up_element(elements.length - $index - 1)" ng-class="{disabled:$first}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-up'></i></button>
               <button ng-click="remove_element(elements.length - $index - 1)" type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
             </form>
           </div>
         </div>
-
+        <h3>Info</h3>
         <div class='row'>
           <pre class='well' id='meta'>{{ debug() }}</pre>
         </div>
