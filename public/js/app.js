@@ -53,8 +53,7 @@ canvio.controller('CanvasControl', function($scope){
   $scope.height = 250;
   $scope.commands = [];
   $scope.movable_element = false;
-  $scope.elements = [
-    {
+  var background = {
       name: 'background',
       type: 'rectangle',
       x: 0,
@@ -62,8 +61,8 @@ canvio.controller('CanvasControl', function($scope){
       width: $scope.width,
       height: $scope.height,
       fill: '#ffffff'
-    }
-  ];
+    };
+  $scope.elements = [background];
   var canvas = document.getElementById('tag_output');
   var context = canvas.getContext('2d');
 
@@ -103,7 +102,7 @@ canvio.controller('CanvasControl', function($scope){
   };
 
   $scope.clear = function(){
-    $scope.elements = [];
+    $scope.elements = [background];
     context.clearRect(0 ,0 , $scope.width, $scope.height);
   };
 
@@ -234,6 +233,9 @@ canvio.controller('CanvasControl', function($scope){
   $scope.remove_element = function(index){
     console.log(index);
     $scope.elements.splice(index, 1);
+    if (index === $scope.movable_element){
+      $scope.movable_element = false;
+    }
     $scope.draw();
   };
 
@@ -254,5 +256,9 @@ canvio.controller('CanvasControl', function($scope){
     }else{
       $scope.movable_element = index;
     }
+  };
+
+  $scope.generate_tag = function(){
+    return commands.join(';');
   };
 });
