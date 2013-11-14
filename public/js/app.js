@@ -1,4 +1,4 @@
-var canvio = angular.module('canvio', []);
+var canvio = angular.module('canvio', ['ngSanitize']);
 
 var array_move = function (array, old_index, new_index) {
     if (new_index >= array.length) {
@@ -41,18 +41,29 @@ canvio.directive('uiColorpicker', function() {
     };
 });
 
+canvio.directive('uiFocus', function() {
+    return function(scope, element, attrs) {
+       scope.$watch(attrs.uiFocus, 
+         function (newValue) { 
+            newValue && element.focus();
+         },true);
+      };    
+});
+
 canvio.filter('reverse', function() {
   return function(items) {
     return items.slice().reverse();
   };
 });
 
-canvio.controller('CanvasControl', function($scope){
+canvio.controller('CanvasControl', function($scope, $sce){
 
   $scope.width = 300;
   $scope.height = 250;
   $scope.commands = [];
   $scope.movable_element = false;
+  $scope.landing_page = "http://www.dataxu.com";
+  $scope.direction = "choose a shape to use and start drawing on the canvas below"
   var background = {
       name: 'background',
       type: 'rectangle',
@@ -66,9 +77,15 @@ canvio.controller('CanvasControl', function($scope){
   var canvas = document.getElementById('tag_output');
   var context = canvas.getContext('2d');
 
+  var directions = {
+    rectangle: "click and drag between two corners",
+    circle: "click the center of the circle and drag the length of the radius",
+    text: "click to set the bottom-left corner of the text and begin typing",
+    img: "click in one place to render the image its normal size. drag to set the size",
+  };
   $scope.set_mode = function(mode){
-    console.log(mode);
     $scope.mode = mode;
+    $scope.direction = directions[mode];
   };
 
   $scope.get_elements = function(){
@@ -98,7 +115,16 @@ canvio.controller('CanvasControl', function($scope){
   $scope.mouseup = function(ev){
     console.log(ev);
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
-    add_element();
+    if ($scope.movable_element === false){
+      add_element();
+    }else{
+      move_element();
+    }
+  };
+
+  $scope.mousemove = function(ev){
+    console.log(ev);
+    $scope.mouse_point = {x: ev.offsetX, y: ev.offsetY};
   };
 
   $scope.clear = function(){
@@ -132,7 +158,7 @@ canvio.controller('CanvasControl', function($scope){
           type: 'text',
           x: $scope.start_point.x,
           y: $scope.start_point.y,
-          text: "Insert Text",
+          text: "",
           font_size: "20px",
           font: "Arial"
         };
@@ -166,8 +192,17 @@ canvio.controller('CanvasControl', function($scope){
     }
   };
 
-  $scope.draw = function(){
-    context.clearRect(0 ,0 , $scope.width, $scope.height);
+  var move_element = function(){
+    diff_x = $scope.end_point.x - $scope.start_point.x;
+    diff_y = $scope.end_point.y - $scope.start_point.y;
+    console.log(diff_x);
+    console.log(diff_y);
+    $scope.elements[$scope.movable_element].x = parseInt($scope.elements[$scope.movable_element].x + diff_x, 10);
+    $scope.elements[$scope.movable_element].y = parseInt($scope.elements[$scope.movable_element].y + diff_y, 10);
+    $scope.draw();
+  };
+
+  var generate_commands = function(final){
     var commands = [];
     for (var i in $scope.elements){
       var elem = $scope.elements[i];
@@ -217,21 +252,26 @@ canvio.controller('CanvasControl', function($scope){
           break;
         case 'img':
           commands.push("var img = new Image");
+          var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
+          // commands.push("img.onload = function(){" + img_fn + "}");
           commands.push("img.src = '" + elem.url + "'");
-          commands.push("context.drawImage(img, " + elem.x + ", " + elem.y + ", " + elem.width + ", " + elem.height + ")");
-
+          commands.push(img_fn);
           break;
         default:
           console.log("Draw not caught");
       }
     }
-    console.log(commands);
+    return commands;
+  };
+
+  $scope.draw = function(){
+    context.clearRect(0 ,0 , $scope.width, $scope.height);
+    var commands = generate_commands(false);
     eval(commands.join(';'));
     $scope.commands = commands;
   };
 
   $scope.remove_element = function(index){
-    console.log(index);
     $scope.elements.splice(index, 1);
     if (index === $scope.movable_element){
       $scope.movable_element = false;
@@ -250,7 +290,6 @@ canvio.controller('CanvasControl', function($scope){
   };
 
   $scope.toggle_movable = function(index){
-    console.log("Setting movable of " + index);
     if (index === $scope.movable_element){
       $scope.movable_element = false;
     }else{
@@ -259,6 +298,21 @@ canvio.controller('CanvasControl', function($scope){
   };
 
   $scope.generate_tag = function(){
-    return commands.join(';');
+    var r = "";
+    // r += "<html><head></head><body>";
+    r += "<a target='_blank' href='"+ $scope.landing_page +"'>\n";
+    r += "<canvas id='canvas' width='"+ $scope.width +"' height='"+ $scope.height +"'></canvas>\n";
+    r += "</a>\n";
+    r += "<script>\n";
+    r += "var canvas = document.getElementById('canvas');\n";
+    r += "var context = canvas.getContext('2d');\n"
+    r += $scope.commands.join(';\n')
+    r += "\n</script>";
+    // r += "</body></html>";
+    return r;
+  };
+
+  $scope.tag_preview = function(){
+    return $sce.trustAsHtml($scope.generate_tag());
   };
 });

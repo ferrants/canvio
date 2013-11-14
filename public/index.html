@@ -18,7 +18,7 @@
         <h1>Canvio</h1>
         <div class='row'>
           <div id='tag_input_wrapper' class="pull-left">
-            <form id='settings_form' class='form-inline' ng-init="fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'">
+            <form id='settings_form' class='form-inline' ng-init="fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'; draw();">
               <div class="btn-group" id='mode_select'>
                 <button ng-click="set_mode('rectangle')" type="button" class="btn btn-default" ng-class="{active:mode=='rectangle'}"><i class='glyphicon glyphicon-stop'></i></button>
                 <button ng-click="set_mode('circle')" type="button" class="btn btn-default" ng-class="{active:mode=='circle'}"><i class='glyphicon glyphicon-record'></i></button>
@@ -40,98 +40,107 @@
               <ui-colorpicker ng-model="stroke_color"></ui-colorpicker>
 
               <div class='form-group'>
-                  <input ng-model="width" type="text" id='width' value='300' class="form-control" placeholder="width">
+                  <input ng-model="width" type="text" id='width' value='' class="form-control" placeholder="width">
               </div>
               x
               <div class='form-group'>
-                  <input ng-model="height" type="text" id='height' value='250' class="form-control" placeholder="height">
+                  <input ng-model="height" type="text" id='height' value='' class="form-control" placeholder="height">
               </div>
 
               <button ng-click="draw()" id='settings_form_button' type='button' class='btn btn-primary'>Draw</button>
               <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-danger'>Clear</button>
+
+              <div class='form-group'>
+                  <input ng-model="landing_page" type="text" id='landing_page' value='' class="form-control" placeholder="landing page">
+              </div>
             </form>
+            <div>{{ direction }}<br/>{{ mouse_point.x }} - {{ mouse_point.y }}</div>
 
             <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
-              <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)" ng-class="{movable:movable_element !== false}">
-              </canvas>
+              <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)" ng-class="{movable:movable_element !== false}"></canvas>
             </div>
           </div>
         </div>
         <h3>Layers</h3>
         <div class='row' id='element_list'>
           <div ng-repeat="element in get_elements() | reverse" class='element_description' ng-class="{movable:movable_element === elements.length - $index - 1}">
-            <input ng-model="element.name" type="text" class="form-control element_name_input" placeholder="{{ element.type }} name">
-            <form class='form-inline'>
-              x:
-              <div class='form-group'>
-                <input ng-model="element.x" type="text" class="form-control" placeholder="x">
-              </div>
-              y:
-              <div class='form-group'>
-                <input ng-model="element.y" type="text" class="form-control" placeholder="x">
-              </div>
-              <span ng-switch on="element.type">
-                <span ng-switch-when="rectangle">
-                  w:
-                  <div class='form-group'>
-                    <input ng-model="element.width" type="text" class="form-control" placeholder="x">
-                  </div>
-                  h:
-                  <div class='form-group'>
-                    <input ng-model="element.height" type="text" class="form-control" placeholder="x">
-                  </div>
-                </span>
-                <span ng-switch-when="circle">
-                  r:
-                  <div class='form-group'>
-                    <input ng-model="element.radius" type="text" class="form-control" placeholder="x">
-                  </div>
-                </span>
-                <span ng-switch-when="text">
-                  text:
-                  <div class='form-group'>
-                    <input ng-model="element.text" type="text" class="form-control" placeholder="x">
-                  </div>
-                  font_size:
-                  <div class='form-group'>
-                    <input ng-model="element.font_size" type="text" class="form-control" placeholder="x">
-                  </div>
-                  font:
-                  <div class='form-group'>
-                    <input ng-model="element.font" type="text" class="form-control" placeholder="x">
-                  </div>
-                </span>
-                <span ng-switch-when="img">
-                  url:
-                  <div class='form-group'>
-                    <input ng-model="element.url" type="text" class="form-control" placeholder="x">
-                  </div>
-                  width:
-                  <div class='form-group'>
-                    <input ng-model="element.width" type="text" class="form-control" placeholder="x">
-                  </div>
-                  height:
-                  <div class='form-group'>
-                    <input ng-model="element.height" type="text" class="form-control" placeholder="x">
-                  </div>
-                </span>
-              </span>
+            <div class='pull-right'>
               <ui-colorpicker ng-model="element.fill"></ui-colorpicker>
               <ui-colorpicker ng-model="element.stroke"></ui-colorpicker>
               <button ng-click="toggle_movable(elements.length - $index - 1)" type='button' class='btn'><i class='glyphicon glyphicon-move'></i></button>
               <button ng-click="move_back_element(elements.length - $index - 1)" ng-class="{disabled:$last}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-down'></i></button>
               <button ng-click="move_up_element(elements.length - $index - 1)" ng-class="{disabled:$first}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-up'></i></button>
               <button ng-click="remove_element(elements.length - $index - 1)" type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
+            </div>
+            <input ng-model="element.name" type="text" class="form-control element_name_input" placeholder="{{ element.type }} name">
+            <form class='form-inline'>
+              x:
+              <div class='form-group'>
+                <input ng-model="element.x" type="text" class="form-control" ng-change="draw()" placeholder="x">
+              </div>
+              y:
+              <div class='form-group'>
+                <input ng-model="element.y" type="text" class="form-control" ng-change="draw()" placeholder="x">
+              </div>
+              <span ng-switch on="element.type">
+                <span ng-switch-when="rectangle">
+                  w:
+                  <div class='form-group'>
+                    <input ng-model="element.width" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                  h:
+                  <div class='form-group'>
+                    <input ng-model="element.height" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                </span>
+                <span ng-switch-when="circle">
+                  r:
+                  <div class='form-group'>
+                    <input ng-model="element.radius" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                </span>
+                <span ng-switch-when="text">
+                  text:
+                  <div class='form-group'>
+                    <input ng-model="element.text" type="text" class="form-control" ui-focus='$first' ng-change="draw()" placeholder="x">
+                  </div>
+                  font_size:
+                  <div class='form-group'>
+                    <input ng-model="element.font_size" type="text" class="form-control" ng-change="draw()" placeholder="20px">
+                  </div>
+                  font:
+                  <div class='form-group'>
+                    <input ng-model="element.font" type="text" class="form-control" ng-change="draw()" placeholder="Arial">
+                  </div>
+                </span>
+                <span ng-switch-when="img">
+                  url:
+                  <div class='form-group'>
+                    <input ng-model="element.url" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                  width:
+                  <div class='form-group'>
+                    <input ng-model="element.width" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                  height:
+                  <div class='form-group'>
+                    <input ng-model="element.height" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                  </div>
+                </span>
+              </span>
             </form>
           </div>
         </div>
-        <h3>Info</h3>
-        <div class='row'>
-          <pre class='well' id='meta'>{{ debug() }}</pre>
-        </div>
         <h3>Tag</h3>
         <div class='row'>
-          <pre class='well' id='meta'>{{ generate_tag() }}</pre>
+          <pre class='well'>{{ generate_tag() }}</pre>
+        </div>
+        <h3>Output</h3>
+        <div class='row' ng-bind-html="tag_preview()">
+        </div>
+        <h3>Data</h3>
+        <div class='row'>
+          <pre class='well' id='meta'>{{ debug() }}</pre>
         </div>
 
       </div>
@@ -141,6 +150,7 @@
     <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="/lib/spectrum/spectrum.js"></script>
     <script src="/lib/angular/angular.min.js"></script>
+    <script src="/lib/angular/sanitize.js"></script>
     <script src="/js/app.js"></script>
   </body>
 </html>

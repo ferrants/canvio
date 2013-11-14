@@ -19,9 +19,9 @@
 	margin: 7px;
 	width: 300px;
 }
-canvas{
+canvas#tag_output{
 	cursor: crosshair;
 }
-canvas.movable{
+canvas#tag_output.movable{
 	cursor: move;
 }
