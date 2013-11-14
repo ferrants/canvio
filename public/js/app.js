@@ -82,27 +82,78 @@ canvio.filter('reverse', function() {
 
 canvio.controller('CanvasControl', function($scope, $sce){
 
-  $scope.width = 300;
-  $scope.height = 250;
+  var canvas = document.getElementById('tag_output');
+  var context = canvas.getContext('2d');
+
   $scope.commands = [];
   $scope.movable_element = false;
   $scope.landing_page = "http://www.dataxu.com";
   $scope.direction = "choose a shape to use and start drawing on the canvas below",
   $scope.mouse_down = false;
   $scope.times_moved = 0;
+  $scope.loaded_image = "http://cdn.meme.li/i/pk39x.jpg";
 
-  var background = {
-      name: 'background',
-      type: 'rectangle',
-      x: 0,
-      y: 0,
-      width: $scope.width,
-      height: $scope.height,
-      fill: '#ffffff'
-    };
-  $scope.elements = [background];
-  var canvas = document.getElementById('tag_output');
-  var context = canvas.getContext('2d');
+  $scope.templates = [
+    {
+      name: "Blank 300x250",
+      description: "A blank 300x250 canvas",
+      width: 300,
+      height: 250,
+      elements: [{
+        name: 'background',
+        type: 'rectangle',
+        x: 0,
+        y: 0,
+        width: 300,
+        height: 250,
+        fill: '#ffffff'
+      }]
+    },
+    {
+      name: "Blank 728x90",
+      description: "A blank 728x90 canvas",
+      width: 728,
+      height: 90,
+      elements: [{
+        name: 'background',
+        type: 'rectangle',
+        x: 0,
+        y: 0,
+        width: 728,
+        height: 90,
+        fill: '#ffffff'
+      }]
+    },
+    {
+      name: "Blank 300x600",
+      description: "A blank 300x600 canvas",
+      width: 300,
+      height: 600,
+      elements: [{
+        name: 'background',
+        type: 'rectangle',
+        x: 0,
+        y: 0,
+        width: 300,
+        height: 600,
+        fill: '#ffffff'
+      }]
+    }
+  ];
+
+  $scope.load_template = function(template){
+    $scope.width = template.width;
+    $scope.height = template.height;
+    $scope.elements = template.elements.slice(0);;
+    $scope.draw();
+  };
+
+  $scope.set_template = function(template){
+    console.log("Setting");
+    console.log(template);
+    $scope.starting_template = template;
+    $scope.load_template($scope.starting_template);
+  };
 
   var directions = {
     rectangle: "click and drag between two corners",
@@ -141,7 +192,6 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
   
   $scope.mousedown = function(ev){
-    console.log(ev);
     ev.originalEvent.preventDefault();
     $scope.mouse_down = true;
     $scope.start_point = {x: ev.offsetX, y: ev.offsetY};
@@ -150,7 +200,6 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
   
   $scope.mouseup = function(ev){
-    console.log(ev);
     $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
@@ -170,12 +219,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
     $scope.mouse_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.mouse_down){
       if ($scope.movable_element !== false){
-        console.log(ev);
         move_element();
       }else{
         if (['text'].indexOf($scope.mode ) == -1){
           if ($scope.times_moved > 1){
-            console.log("Popping: " + $scope.times_moved);
             $scope.elements.pop();
           }
           add_element($scope.mouse_point);
@@ -189,13 +236,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   $scope.clear = function(){
-    $scope.elements = [background];
-    context.clearRect(0 ,0 , $scope.width, $scope.height);
-    $scope.draw();
+    $scope.load_template($scope.starting_template);
   };
 
   var add_element = function(end_point){
-    console.log($scope);
     var elem_data = false;
     switch ($scope.mode){
       case 'rectangle':
@@ -230,7 +274,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
           type: 'img',
           x: $scope.start_point.x,
           y: $scope.start_point.y,
-          url: "http://cdn.meme.li/i/pk39x.jpg",
+          url: $scope.loaded_image,
           width: end_point.x - $scope.start_point.x,
           height: end_point.y - $scope.start_point.y
         };
@@ -394,4 +438,42 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.tag_preview = function(){
     return $sce.trustAsHtml($scope.generate_tag());
   };
+
+
+  $scope.get_templates = function(){
+    return $scope.templates;
+  };
+
+  var imgs = [];
+  for (var i = 1 ; i < 10 ; i++){
+    imgs.push({
+      name: "Template " + i,
+      description: "Description " + i,
+      url: "http://cdn.meme.li/i/pk39x.jpg",
+      img_url: "http://cdn.meme.li/i/pk39x.jpg",
+      selected: false
+    });
+  }
+
+  $scope.get_images = function(){
+    return imgs;
+  };
+
+  var prods = [];
+  for (var i = 1 ; i < 10 ; i++){
+    prods.push({
+      name: "Template " + i,
+      description: "Description " + i,
+      url: "http://cdn.meme.li/i/pk39x.jpg",
+      img_url: "http://cdn.meme.li/i/pk39x.jpg",
+      selected: false
+    });
+  }
+
+  $scope.get_products = function(){
+    return prods;
+  };
+
+  $scope.starting_template = $scope.templates[0];
+  $scope.load_template($scope.starting_template);
 });

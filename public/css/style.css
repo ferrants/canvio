@@ -25,3 +25,14 @@ canvas#tag_output{
 canvas#tag_output.movable{
 	cursor: move;
 }
+#template_modal .modal-dialog{
+	width: 900px;
+}
+.modal-body .thumbnail:hover{
+	cursor: pointer;
+	border-color: black;
+}
+
+.modal-body .thumbnail.selected{
+	background-color: #eeeeff;
+}

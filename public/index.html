@@ -19,8 +19,8 @@
           <div id='tag_input_wrapper'>
             <form id='settings_form' class='form-inline' ng-init="fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'; draw();">
               <div class="btn-group" id='mode_select'>
-                <button type="button" class="btn btn-default"><i class='glyphicon glyphicon-folder-open'></i>&nbsp;&nbsp;Open Template</button>
-                <button type="button" class="btn btn-default"><i class='glyphicon glyphicon-import'></i> Import Product Feed</button>
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#template_modal"><i class='glyphicon glyphicon-folder-open'></i>&nbsp;&nbsp;Open Template</button>
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#feed_modal"><i class='glyphicon glyphicon-import'></i> Import Product Feed</button>
               </div>
               Landing Page
               <div class='form-group'>
@@ -36,7 +36,7 @@
                 <button ng-click="set_mode('rectangle')" type="button" class="btn btn-default" ng-class="{active:mode=='rectangle'}"><i class='glyphicon glyphicon-stop'></i></button>
                 <button ng-click="set_mode('circle')" type="button" class="btn btn-default" ng-class="{active:mode=='circle'}"><i class='glyphicon glyphicon-record'></i></button>
                 <button ng-click="set_mode('text')" type="button" class="btn btn-default" ng-class="{active:mode=='text'}"><i class='glyphicon glyphicon-font'></i></button>
-                <button ng-click="set_mode('img')" type="button" class="btn btn-default" ng-class="{active:mode=='img'}"><i class='glyphicon glyphicon-picture'></i></button>
+                <button ng-click="set_mode('img')"  data-toggle="modal" data-target="#img_modal" type="button" class="btn btn-default" ng-class="{active:mode=='img'}"><i class='glyphicon glyphicon-picture'></i></button>
               </div>
               <div class="checkbox">
                 <label>
@@ -148,6 +148,84 @@
         <h3>Data</h3>
         <div class='row'>
           <pre class='well' id='meta'>{{ debug() }}</pre>
+        </div>
+
+        <div class="modal fade" id="template_modal" tabindex="-1" role="dialog" aria-labelledby="template_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="template_modal_label">Select a template</h4>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-md-4" ng-repeat="temp in get_templates()" ng-click="set_template(temp);">
+                    <div class="thumbnail" data-dismiss="modal">
+                      <canvas height="{{ temp.height }}" width="{{ temp.width }}"></canvas>
+                      <div class="caption">
+                        <h3>{{ temp.name }}</h3>
+                        <p>{{ temp.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="img_modal" tabindex="-1" role="dialog" aria-labelledby="img_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="img_modal_label">Select an Image</h4>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-md-4" ng-repeat="img in get_images()">
+                    <div class="thumbnail" data-dismiss="modal">
+                      <img ng-src="{{ img.url }}" alt="{{ img.url }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="feed_modal" tabindex="-1" role="dialog" aria-labelledby="feed_modal_label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="feed_modal_label">Select Product Items</h4>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-md-4" ng-repeat="prod in get_products()">
+                    <div class="thumbnail" ng-click="prod.selected = !prod.selected" ng-class="{selected:prod.selected}">
+                      <img ng-src="{{ prod.img_url }}" alt="{{ prod.description }}">
+                      <div class="caption">
+                        <h3>{{ prod.name }}</h3>
+                        <p>{{ prod.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Insert Item Tags</button>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
