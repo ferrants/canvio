@@ -13,7 +13,7 @@
 	border-radius: 3px;
 }
 .element_description.movable{
-	background-color: #eeeeff;
+	background-color: #e0e0ff;
 }
 .element_name_input{
 	margin: 7px;
@@ -34,5 +34,5 @@ canvas#tag_output.movable{
 }
 
 .modal-body .thumbnail.selected{
-	background-color: #eeeeff;
+	background-color: #e0e0ff;
 }

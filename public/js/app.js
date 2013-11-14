@@ -91,7 +91,6 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.direction = "choose a shape to use and start drawing on the canvas below",
   $scope.mouse_down = false;
   $scope.times_moved = 0;
-  $scope.loaded_image = "http://cdn.meme.li/i/pk39x.jpg";
 
   $scope.templates = [
     {
@@ -140,6 +139,26 @@ canvio.controller('CanvasControl', function($scope, $sce){
       }]
     }
   ];
+
+  $scope.images = [
+    "https://advertisers.dataxu.com/creative-assets/0_WYTSCPpB.gif",
+    "https://advertisers.dataxu.com/assets/logo-c395505ca57dd03cf5f973ee4b424350.png",
+    "http://www.dataxu.com/wp-content/themes/dataxu_v2/images/header-logo.gif",
+    "http://www.dataxu.com/wp-content/uploads/2012/09/slide41.jpg",
+    "http://www.dataxu.com/wp-content/uploads/2012/09/slide1-new.jpg",
+    "http://www.dataxu.com/wp-content/uploads/2013/01/slide22.jpg",
+    "http://www.dataxu.com/wp-content/uploads/2013/01/slide31.jpg",
+    "http://www.dataxu.com/wp-content/uploads/2012/09/slide51.jpg"
+  ];
+
+  $scope.set_loaded_image = function(image){
+    $scope.loaded_image = image;
+    if ($scope.images.indexOf(image) == -1){
+      $scope.images.push(image);
+    }
+  }
+  $scope.set_loaded_image($scope.images[0]);
+
 
   $scope.load_template = function(template){
     $scope.width = template.width;
@@ -439,33 +458,21 @@ canvio.controller('CanvasControl', function($scope, $sce){
     return $sce.trustAsHtml($scope.generate_tag());
   };
 
-
   $scope.get_templates = function(){
     return $scope.templates;
   };
 
-  var imgs = [];
-  for (var i = 1 ; i < 10 ; i++){
-    imgs.push({
-      name: "Template " + i,
-      description: "Description " + i,
-      url: "http://cdn.meme.li/i/pk39x.jpg",
-      img_url: "http://cdn.meme.li/i/pk39x.jpg",
-      selected: false
-    });
-  }
-
   $scope.get_images = function(){
-    return imgs;
+    return $scope.images;
   };
 
   var prods = [];
   for (var i = 1 ; i < 10 ; i++){
     prods.push({
-      name: "Template " + i,
+      name: "Product " + i,
       description: "Description " + i,
-      url: "http://cdn.meme.li/i/pk39x.jpg",
-      img_url: "http://cdn.meme.li/i/pk39x.jpg",
+      // url: "http://cdn.meme.li/i/pk39x.jpg",
+      // img_url: "http://cdn.meme.li/i/pk39x.jpg",
       selected: false
     });
   }

@@ -155,7 +155,8 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="template_modal_label">Select a template</h4>
+                <h3 class="modal-title" id="template_modal_label">Select a template</h3>
+                <p>This will replace your current creative with a new one from the selected template</p>
               </div>
               <div class="modal-body">
                 <div class="row">
@@ -182,18 +183,27 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="img_modal_label">Select an Image</h4>
+                <h3 class="modal-title" id="img_modal_label">Select an Image</h3>
+                <p>Insert a loaded image or add your own using the input at the bottom</p>
               </div>
               <div class="modal-body">
                 <div class="row">
                   <div class="col-md-4" ng-repeat="img in get_images()">
-                    <div class="thumbnail" data-dismiss="modal">
-                      <img ng-src="{{ img.url }}" alt="{{ img.url }}">
+                    <div class="thumbnail" data-dismiss="modal" ng-click="set_loaded_image(img);">
+                      <img ng-src="{{ img }}" alt="{{ img }}">
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
+                <div class="col-lg-8">
+                  <div class="input-group pull-left">
+                    <input type="text" class="form-control" ng-model="new_image_url" placeholder="http://www.myimg.com/pix.gif">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button" ng-click="set_loaded_image(new_image_url);">Add</button>
+                    </span>
+                  </div>
+                </div>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
               </div>
             </div>
@@ -205,7 +215,8 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="feed_modal_label">Select Product Items</h4>
+                <h3 class="modal-title" id="feed_modal_label">Select Product Items</h3>
+                <p>Selected products will dynamically show within the tag</p>
               </div>
               <div class="modal-body">
                 <div class="row">
