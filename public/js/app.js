@@ -19,14 +19,7 @@ var obj_size = function(obj) {
     return size;
 };
 
-var random_prop = function(obj) {
-    var result;
-    var count = 0;
-    for (var prop in obj)
-        if (Math.random() < 1/++count)
-           result = prop;
-    return result;
-}
+var random_prop = function(obj) { var result; var count = 0; for (var prop in obj){if (Math.random() < 1/++count){result = prop;}} return result;};
 
 canvio.directive('uiColorpicker', function() {
     return {
@@ -535,7 +528,8 @@ canvio.controller('CanvasControl', function($scope, $sce){
       r += "  if (chosen_variant_key in variants){\n";
       r += "    chosen_variant = variants[chosen_variant_key];\n";
       r += "  }else{\n";
-      r += "  chosen_variant = variants['a'];\n";
+      r += "    var random_prop = function(obj) { var result; var count = 0; for (var prop in obj){if (Math.random() < 1/++count){result = prop;}} return result;};\n";
+      r += "    chosen_variant = variants[random_prop(variants)];\n";
       r += "  }\n";
       r += $scope.commands.join(';\n');
       r += "}\n";
