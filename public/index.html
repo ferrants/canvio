@@ -76,27 +76,27 @@
             <form class='form-inline'>
               x:
               <div class='form-group'>
-                <input ng-model="element.x" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                <input ng-model="element.x" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
               </div>
               y:
               <div class='form-group'>
-                <input ng-model="element.y" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                <input ng-model="element.y" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
               </div>
               <span ng-switch on="element.type">
                 <span ng-switch-when="rectangle">
                   w:
                   <div class='form-group'>
-                    <input ng-model="element.width" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                    <input ng-model="element.width" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
                   </div>
                   h:
                   <div class='form-group'>
-                    <input ng-model="element.height" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                    <input ng-model="element.height" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
                   </div>
                 </span>
                 <span ng-switch-when="circle">
                   r:
                   <div class='form-group'>
-                    <input ng-model="element.radius" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                    <input ng-model="element.radius" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
                   </div>
                 </span>
                 <span ng-switch-when="text">
@@ -106,7 +106,7 @@
                   </div>
                   font_size:
                   <div class='form-group'>
-                    <input ng-model="element.font_size" type="text" class="form-control" ng-change="draw()" placeholder="20px">
+                    <input ng-model="element.font_size" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="20">
                   </div>
                   font:
                   <div class='form-group'>
@@ -120,11 +120,11 @@
                   </div>
                   width:
                   <div class='form-group'>
-                    <input ng-model="element.width" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                    <input ng-model="element.width" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
                   </div>
                   height:
                   <div class='form-group'>
-                    <input ng-model="element.height" type="text" class="form-control" ng-change="draw()" placeholder="x">
+                    <input ng-model="element.height" ui-keydown type="text" class="form-control" ng-change="draw()" placeholder="x">
                   </div>
                 </span>
               </span>

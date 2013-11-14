@@ -41,6 +41,30 @@ canvio.directive('uiColorpicker', function() {
     };
 });
 
+canvio.directive('uiKeydown', function() {
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    scope: false,
+    link: function(scope, elem, attrs, ngModel) {
+      ngModel.$render = function() {
+        console.log("HERE");
+        elem.val(ngModel.$viewValue || 0);
+      };
+
+      elem.on('keydown', function(e){
+        if (e.which == 38){
+          ngModel.$setViewValue(parseInt(ngModel.$viewValue, 10) + 1);
+          ngModel.$render();
+        }else if (e.which == 40){
+          ngModel.$setViewValue(parseInt(ngModel.$viewValue, 10) - 1);
+          ngModel.$render();
+        }
+      });
+    }
+  };
+});
+
 canvio.directive('uiFocus', function() {
     return function(scope, element, attrs) {
        scope.$watch(attrs.uiFocus, 
@@ -65,6 +89,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.landing_page = "http://www.dataxu.com";
   $scope.direction = "choose a shape to use and start drawing on the canvas below",
   $scope.mouse_down = false;
+  $scope.times_moved = 0;
 
   var background = {
       name: 'background',
@@ -88,6 +113,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.set_mode = function(mode){
     $scope.mode = mode;
     $scope.direction = directions[mode];
+    $scope.movable_element = false;
   };
 
   $scope.get_elements = function(){
@@ -120,6 +146,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
     $scope.mouse_down = true;
     $scope.start_point = {x: ev.offsetX, y: ev.offsetY};
     $scope.end_point = false;
+    $scope.times_moved = 0;
   };
   
   $scope.mouseup = function(ev){
@@ -127,17 +154,30 @@ canvio.controller('CanvasControl', function($scope, $sce){
     $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
-      add_element();
+      if ($scope.mode == 'text'){
+        add_element($scope.end_point);
+      }
     }else{
       $scope.movable_start_point = {x: $scope.elements[$scope.movable_element].x, y: $scope.elements[$scope.movable_element].y};
     }
   };
 
   $scope.mousemove = function(ev){
+    $scope.times_moved += 1;
     $scope.mouse_point = {x: ev.offsetX, y: ev.offsetY};
-    if ($scope.movable_element !== false && $scope.mouse_down){
-      console.log(ev);
-      move_element();
+    if ($scope.mouse_down){
+      if ($scope.movable_element !== false){
+        console.log(ev);
+        move_element();
+      }else{
+        if ($scope.mode != 'text'){
+          if ($scope.times_moved > 1){
+            console.log("Popping: " + $scope.times_moved);
+            $scope.elements.pop();
+          }
+          add_element($scope.mouse_point);
+        }
+      }
     }
   };
 
@@ -148,9 +188,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.clear = function(){
     $scope.elements = [background];
     context.clearRect(0 ,0 , $scope.width, $scope.height);
+    $scope.draw();
   };
 
-  var add_element = function(){
+  var add_element = function(end_point){
     console.log($scope);
     var elem_data = false;
     switch ($scope.mode){
@@ -159,22 +200,17 @@ canvio.controller('CanvasControl', function($scope, $sce){
           type: 'rectangle',
           x: $scope.start_point.x,
           y: $scope.start_point.y,
-          width: $scope.end_point.x - $scope.start_point.x,
-          height: $scope.end_point.y - $scope.start_point.y
+          width: end_point.x - $scope.start_point.x,
+          height: end_point.y - $scope.start_point.y
         };
-        if (elem_data.width == 0 || elem_data.height == 0){
-          elem_data = false;
-        }
         break;
       case 'circle':
-        if ($scope.end_point.x - $scope.start_point.x !== 0 || $scope.end_point.y - $scope.start_point.y !== 0){
-          elem_data = {
-            type: 'circle',
-            x: $scope.start_point.x,
-            y: $scope.start_point.y,
-            radius: Math.floor(Math.sqrt(($scope.end_point.x - $scope.start_point.x)*($scope.end_point.x - $scope.start_point.x)+($scope.end_point.y - $scope.start_point.y)*($scope.end_point.y - $scope.start_point.y)))
-          };
-        }
+        elem_data = {
+          type: 'circle',
+          x: $scope.start_point.x,
+          y: $scope.start_point.y,
+          radius: Math.floor(Math.sqrt((end_point.x - $scope.start_point.x)*(end_point.x - $scope.start_point.x)+(end_point.y - $scope.start_point.y)*(end_point.y - $scope.start_point.y)))
+        };
         break;
       case 'text':
         elem_data = {
@@ -182,7 +218,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
           x: $scope.start_point.x,
           y: $scope.start_point.y,
           text: "",
-          font_size: "20px",
+          font_size: "20",
           font: "Arial"
         };
         break;
@@ -192,8 +228,8 @@ canvio.controller('CanvasControl', function($scope, $sce){
           x: $scope.start_point.x,
           y: $scope.start_point.y,
           url: "http://cdn.meme.li/i/pk39x.jpg",
-          width: $scope.end_point.x - $scope.start_point.x,
-          height: $scope.end_point.y - $scope.start_point.y
+          width: end_point.x - $scope.start_point.x,
+          height: end_point.y - $scope.start_point.y
         };
         break;
       default:
@@ -248,7 +284,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
       return commands;
     },
     'text': function(elem){
-      var commands = ["context.font = '" + elem.font_size + " " + elem.font + "'"]
+      var commands = ["context.font = '" + elem.font_size + "px " + elem.font + "'"]
       if (elem.fill){
         commands.push("context.fillText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
       }
