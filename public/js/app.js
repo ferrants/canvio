@@ -63,7 +63,9 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.commands = [];
   $scope.movable_element = false;
   $scope.landing_page = "http://www.dataxu.com";
-  $scope.direction = "choose a shape to use and start drawing on the canvas below"
+  $scope.direction = "choose a shape to use and start drawing on the canvas below",
+  $scope.mouse_down = false;
+
   var background = {
       name: 'background',
       type: 'rectangle',
@@ -102,29 +104,45 @@ canvio.controller('CanvasControl', function($scope, $sce){
       height: $scope.height,
       mode: $scope.mode,
       elements: $scope.elements,
-      commands: $scope.commands
+      commands: $scope.commands,
+      mouse_down: $scope.mouse_down,
+      points: {
+        start_point: $scope.start_point,
+        end_point: $scope.end_point,
+        movable_start_point: $scope.movable_start_point
+      }
     }, undefined, 2);
   };
   
   $scope.mousedown = function(ev){
     console.log(ev);
     ev.originalEvent.preventDefault();
+    $scope.mouse_down = true;
     $scope.start_point = {x: ev.offsetX, y: ev.offsetY};
+    $scope.end_point = false;
   };
   
   $scope.mouseup = function(ev){
     console.log(ev);
+    $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
       add_element();
     }else{
-      move_element();
+      $scope.movable_start_point = {x: $scope.elements[$scope.movable_element].x, y: $scope.elements[$scope.movable_element].y};
     }
   };
 
   $scope.mousemove = function(ev){
-    console.log(ev);
     $scope.mouse_point = {x: ev.offsetX, y: ev.offsetY};
+    if ($scope.movable_element !== false && $scope.mouse_down){
+      console.log(ev);
+      move_element();
+    }
+  };
+
+  $scope.mouseout = function(ev){
+    $scope.mouse_down = false;
   };
 
   $scope.clear = function(){
@@ -149,7 +167,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
         }
         break;
       case 'circle':
-        if ($scope.end_point.x - $scope.start_point.x > 0 && $scope.end_point.y - $scope.start_point.y > 0){
+        if ($scope.end_point.x - $scope.start_point.x !== 0 || $scope.end_point.y - $scope.start_point.y !== 0){
           elem_data = {
             type: 'circle',
             x: $scope.start_point.x,
@@ -198,81 +216,96 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   var move_element = function(){
-    diff_x = $scope.end_point.x - $scope.start_point.x;
-    diff_y = $scope.end_point.y - $scope.start_point.y;
-    console.log(diff_x);
-    console.log(diff_y);
-    $scope.elements[$scope.movable_element].x = parseInt($scope.elements[$scope.movable_element].x + diff_x, 10);
-    $scope.elements[$scope.movable_element].y = parseInt($scope.elements[$scope.movable_element].y + diff_y, 10);
+    if ($scope.mouse_down){
+      $scope.elements[$scope.movable_element].x = parseInt($scope.movable_start_point.x + $scope.mouse_point.x - $scope.start_point.x , 10);
+      $scope.elements[$scope.movable_element].y = parseInt($scope.movable_start_point.y + $scope.mouse_point.y - $scope.start_point.y , 10);
+    }
     $scope.draw();
   };
 
-  var generate_commands = function(final){
+  var generate_shape_commands = {
+    'rectangle': function(elem){
+      commands = ["context.beginPath()"];
+      if (elem.fill){
+        commands.push("context.fillRect(" + elem.x + "," + elem.y + "," + elem.width + "," + elem.height + ")");
+      }
+      if (elem.stroke){
+        commands.push("context.strokeRect(" + elem.x + ", " + elem.y + ", " + elem.width + ", " + elem.height + ")");
+      }
+      return commands;
+    },
+    'circle': function(elem){
+      var commands = [
+        "context.beginPath()",
+        "context.arc(" + elem.x + ", " + elem.y + ", " + elem.radius + ", 0, 2*Math.PI)"
+      ]
+      if (elem.fill){
+        commands.push("context.fill()");
+      }
+      if (elem.stroke){
+        commands.push("context.stroke()");
+      }
+      return commands;
+    },
+    'text': function(elem){
+      var commands = ["context.font = '" + elem.font_size + " " + elem.font + "'"]
+      if (elem.fill){
+        commands.push("context.fillText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
+      }
+      if (elem.stroke){
+        commands.push("context.strokeText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
+      }
+      return commands;
+    },
+    'img': function(elem){
+      var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
+      var commands = [
+        "var img = new Image",
+        // "img.onload = function(){" + img_fn + "}",
+        "img.src = '" + elem.url + "'",
+        img_fn
+      ];
+      return commands;
+    }
+  };
+
+  var generate_element_commands = function(elem){
+    var commands = [];
+    console.log(elem);
+
+    if (elem.fill){
+      commands.push("context.fillStyle = '" + elem.fill + "'");
+    }else{
+      commands.push("context.fillStyle = '#000000'");
+    }
+
+    if (elem.stroke){
+      commands.push("context.strokeStyle = '" + elem.stroke + "'");
+    }else{
+      commands.push("context.strokeStyle = '#000000'");
+    }
+
+    commands = commands.concat(generate_shape_commands[elem.type](elem));
+
+    return commands;
+  };
+
+  var generate_commands = function(){
     var commands = [];
     for (var i in $scope.elements){
-      var elem = $scope.elements[i];
-      console.log(elem);
-
-      if (elem.fill){
-        commands.push("context.fillStyle = '" + elem.fill + "'");
-      }else{
-        commands.push("context.fillStyle = '#000000'");
-      }
-
-      if (elem.stroke){
-        commands.push("context.strokeStyle = '" + elem.stroke + "'");
-      }else{
-        commands.push("context.strokeStyle = '#000000'");
-      }
-
-
-      switch (elem.type){
-        case 'rectangle':
-          commands.push("context.beginPath()");
-          if (elem.fill){
-            commands.push("context.fillRect(" + elem.x + "," + elem.y + "," + elem.width + "," + elem.height + ")");
-          }
-          if (elem.stroke){
-            commands.push("context.strokeRect(" + elem.x + ", " + elem.y + ", " + elem.width + ", " + elem.height + ")");
-          }
-          break;
-        case 'circle':
-          commands.push("context.beginPath()");
-          commands.push("context.arc(" + elem.x + ", " + elem.y + ", " + elem.radius + ", 0, 2*Math.PI)");
-          if (elem.fill){
-            commands.push("context.fill()");
-          }
-          if (elem.stroke){
-            commands.push("context.stroke()");
-          }
-          break;
-        case 'text':
-          commands.push("context.font = '" + elem.font_size + " " + elem.font + "'");
-          if (elem.fill){
-            commands.push("context.fillText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
-          }
-          if (elem.stroke){
-            commands.push("context.strokeText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
-          }
-          break;
-        case 'img':
-          commands.push("var img = new Image");
-          var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
-          // commands.push("img.onload = function(){" + img_fn + "}");
-          commands.push("img.src = '" + elem.url + "'");
-          commands.push(img_fn);
-          break;
-        default:
-          console.log("Draw not caught");
-      }
+      commands = commands.concat(generate_element_commands($scope.elements[i]));
     }
     return commands;
   };
 
+  var run_commands = function(commands){
+    eval(commands.join(';'));
+  };
+
   $scope.draw = function(){
     context.clearRect(0 ,0 , $scope.width, $scope.height);
-    var commands = generate_commands(false);
-    eval(commands.join(';'));
+    var commands = generate_commands();
+    run_commands(commands);
     $scope.commands = commands;
   };
 
@@ -297,8 +330,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.toggle_movable = function(index){
     if (index === $scope.movable_element){
       $scope.movable_element = false;
+      $scope.movable_start_point = false;
     }else{
       $scope.movable_element = index;
+      $scope.movable_start_point = {x: $scope.elements[$scope.movable_element].x, y: $scope.elements[$scope.movable_element].y}
     }
   };
 
