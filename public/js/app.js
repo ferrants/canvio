@@ -148,6 +148,49 @@ canvio.controller('CanvasControl', function($scope, $sce){
         height: 600,
         fill: '#ffffff'
       }]
+    },
+    {
+      name: "Yellow Circle 300x250",
+      description: "Has a yellow circle on the bottom left corner",
+      width: 300,
+      height: 250,
+      elements: [
+          {
+            "name": "background",
+            "type": "rectangle",
+            "x": 0,
+            "y": 0,
+            "width": 300,
+            "height": 250,
+            "fill": "#ffffff",
+          },
+          {
+            "type": "circle",
+            "x": 34,
+            "y": 497,
+            "radius": 370,
+            "fill": "#000000",
+            "stroke": "#000000",
+          },
+          {
+            "type": "circle",
+            "x": 34,
+            "y": 491,
+            "radius": 356,
+            "fill": "#e6f22c",
+            "stroke": false,
+          },
+          {
+            "type": "text",
+            "x": 160,
+            "y": 231,
+            "text": "Buy Now!",
+            "font_size": "20",
+            "font": "Arial",
+            "fill": "#000000",
+            "stroke": false,
+          }
+        ]
     }
   ];
 
@@ -399,11 +442,12 @@ canvio.controller('CanvasControl', function($scope, $sce){
       return commands;
     },
     'img': function(elem){
-      var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
+      var img_num = Math.floor((Math.random()*100000)+1);
+      var img_fn = "context.drawImage(img"+img_num+", " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
       var commands = [
-        "var img = new Image",
-        "img.onload = function(){" + img_fn + "}",
-        "img.src = '" + elem.url + "'",
+        "var img"+img_num+" = new Image",
+        "img"+img_num+".onload = function(){" + img_fn + "}",
+        "img"+img_num+".src = '" + elem.url + "'",
         // img_fn
       ];
       return commands;
@@ -419,11 +463,12 @@ canvio.controller('CanvasControl', function($scope, $sce){
       return commands;
     },
     'dynamic_img': function(elem){
-      var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
+      var img_num = Math.floor((Math.random()*100000)+1);
+      var img_fn = "context.drawImage(img"+img_num+", " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
       var commands = [
-        "var img = new Image",
-        "img.onload = function(){" + img_fn + "}",
-        "img.src = chosen_variant['" + elem.dynamic_map + "']",
+        "var img"+img_num+" = new Image",
+        "img"+img_num+".onload = function(){" + img_fn + "}",
+        "img"+img_num+".src = chosen_variant['" + elem.dynamic_map + "']",
         // img_fn
       ];
       return commands;
