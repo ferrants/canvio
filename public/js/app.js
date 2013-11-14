@@ -91,6 +91,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.direction = "choose a shape to use and start drawing on the canvas below",
   $scope.mouse_down = false;
   $scope.times_moved = 0;
+  $scope.loaded_variant = false
 
   $scope.templates = [
     {
@@ -151,6 +152,33 @@ canvio.controller('CanvasControl', function($scope, $sce){
     "http://www.dataxu.com/wp-content/uploads/2012/09/slide51.jpg"
   ];
 
+  $scope.products = {
+    "a": {
+      name: "Xenocide",
+      description: "Xenocide: 3 (The Ender Quintet)",
+      img_url: "http://ecx.images-amazon.com/images/I/51UvDFCDZEL._SL150_.jpg",
+      selected: false
+    },
+    "b": {
+      name: "Ender's Shadow",
+      description: "Ender's Shadow: 1 (The Shadow Series)",
+      img_url: "http://ecx.images-amazon.com/images/I/51xlILbZLhL._SL150_.jpg",
+      selected: false
+    },
+    "c": {
+      name: "Shadow of the Hegemon",
+      description: "Shadow of the Hegemon: 2 (The Shadow Series)",
+      img_url: "http://ecx.images-amazon.com/images/I/51BGg7K1UpL._SL150_.jpg",
+      selected: false
+    },
+    "d": {
+      name: "Ender in Exile",
+      description: "Ender in Exile: 5 (The Ender Quintet)",
+      img_url: "http://ecx.images-amazon.com/images/I/515UQMm4IEL._SL150_.jpg",
+      selected: false
+    }
+  };
+
   $scope.set_loaded_image = function(image){
     $scope.loaded_image = image;
     if ($scope.images.indexOf(image) == -1){
@@ -202,6 +230,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
       elements: $scope.elements,
       commands: $scope.commands,
       mouse_down: $scope.mouse_down,
+      selected_products: $scope.products,
       points: {
         start_point: $scope.start_point,
         end_point: $scope.end_point,
@@ -352,10 +381,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
     'text': function(elem){
       var commands = ["context.font = '" + elem.font_size + "px " + elem.font + "'"]
       if (elem.fill){
-        commands.push("context.fillText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
+        commands.push("context.fillText(\"" + elem.text + "\", " + elem.x + ", " + elem.y + ")");
       }
       if (elem.stroke){
-        commands.push("context.strokeText('" + elem.text + "', " + elem.x + ", " + elem.y + ")");
+        commands.push("context.strokeText(\"" + elem.text + "\", " + elem.x + ", " + elem.y + ")");
       }
       return commands;
     },
@@ -368,7 +397,40 @@ canvio.controller('CanvasControl', function($scope, $sce){
         img_fn
       ];
       return commands;
-    }
+    },
+    'dynamic_text': function(elem){
+      var selected_products = $scope.get_selected_products();
+      if ($scope.loaded_variant in selected_products){
+        var text = $scope.get_selected_products()[$scope.loaded_variant][elem.dynamic_map];
+        var commands = ["context.font = '" + elem.font_size + "px " + elem.font + "'"]
+        if (elem.fill){
+          commands.push("context.fillText(\"" + text + "\", " + elem.x + ", " + elem.y + ")");
+        }
+        if (elem.stroke){
+          commands.push("context.strokeText(\"" + text + "\", " + elem.x + ", " + elem.y + ")");
+        }
+        return commands;
+      }else{
+        return [];
+      }
+      
+    },
+    'dynamic_img': function(elem){
+      var selected_products = $scope.get_selected_products();
+      if ($scope.loaded_variant in selected_products){
+        var url = selected_products[$scope.loaded_variant][elem.dynamic_map];
+        var img_fn = "context.drawImage(img, " + elem.x + ", " + elem.y + ((elem.width == 0 || elem.height == 0) ? ")" : ", " + elem.width + ", " + elem.height + ")");
+        var commands = [
+          "var img = new Image",
+          // "img.onload = function(){" + img_fn + "}",
+          "img.src = '" + url + "'",
+          img_fn
+        ];
+        return commands;
+      }else{
+        return [];
+      }
+    },
   };
 
   var generate_element_commands = function(elem){
@@ -401,14 +463,19 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   var run_commands = function(commands){
-    eval(commands.join(';'));
+    try {
+      eval(commands.join(';'));
+    } catch(err) {
+      $scope.description = "there is an error, not drawing";
+    }
+    
   };
 
   $scope.draw = function(){
     context.clearRect(0 ,0 , $scope.width, $scope.height);
     var commands = generate_commands();
-    run_commands(commands);
     $scope.commands = commands;
+    run_commands(commands);
   };
 
   $scope.remove_element = function(index){
@@ -466,19 +533,53 @@ canvio.controller('CanvasControl', function($scope, $sce){
     return $scope.images;
   };
 
-  var prods = [];
-  for (var i = 1 ; i < 10 ; i++){
-    prods.push({
-      name: "Product " + i,
-      description: "Description " + i,
-      // url: "http://cdn.meme.li/i/pk39x.jpg",
-      // img_url: "http://cdn.meme.li/i/pk39x.jpg",
-      selected: false
-    });
-  }
-
   $scope.get_products = function(){
-    return prods;
+    return $scope.products;
+  };
+
+  $scope.get_selected_products = function(){
+    var selected = {};
+    for (var i in $scope.products){
+      if ($scope.products[i].selected){
+        selected[i] = $scope.products[i];
+      }
+    }
+    return selected;
+  };
+
+  $scope.insert_product_tags = function(){
+    $scope.elements.push({
+      name: 'Dynamic Image',
+      type: 'dynamic_img',
+      dynamic_map: 'img_url',
+      x: 20,
+      y: 20,
+      width: 0,
+      height: 0
+    });
+    $scope.elements.push({
+      name: 'Dynamic Description',
+      type: 'dynamic_text',
+      dynamic_map: 'description',
+      x: 20,
+      y: 20,
+      font_size: "20",
+      font: "Arial",
+      fill: ($scope.fill_enabled && $scope.fill_color) ? $scope.fill_color : false,
+      stroke: ($scope.stroke_enabled && $scope.stroke_color) ? $scope.stroke_color : false
+    });
+    $scope.elements.push({
+      name: 'Dynamic Name',
+      type: 'dynamic_text',
+      dynamic_map: 'name',
+      x: 20,
+      y: 20,
+      font_size: "26",
+      font: "Arial",
+      fill: ($scope.fill_enabled && $scope.fill_color) ? $scope.fill_color : false,
+      stroke: ($scope.stroke_enabled && $scope.stroke_color) ? $scope.stroke_color : false
+    });
+    $scope.draw();
   };
 
   $scope.starting_template = $scope.templates[0];
