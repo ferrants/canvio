@@ -54,7 +54,7 @@
                   <input ng-model="landing_page" type="text" id='landing_page' value='' class="form-control" placeholder="landing page">
               </div>
             </form>
-            <div>{{ direction }}<br/>{{ mouse_point.x }} - {{ mouse_point.y }}</div>
+            <div>Help: {{ direction }}<br/>{{ mouse_point.x }} - {{ mouse_point.y }}</div>
 
             <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
               <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)" ng-class="{movable:movable_element !== false}"></canvas>
@@ -65,11 +65,11 @@
         <div class='row' id='element_list'>
           <div ng-repeat="element in get_elements() | reverse" class='element_description' ng-class="{movable:movable_element === elements.length - $index - 1}">
             <div class='pull-right'>
-              <ui-colorpicker ng-model="element.fill"></ui-colorpicker>
-              <ui-colorpicker ng-model="element.stroke"></ui-colorpicker>
+              <ui-colorpicker ng-change="draw()" ng-model="element.fill"></ui-colorpicker>
+              <ui-colorpicker ng-change="draw()" ng-model="element.stroke"></ui-colorpicker>
               <button ng-click="toggle_movable(elements.length - $index - 1)" type='button' class='btn'><i class='glyphicon glyphicon-move'></i></button>
-              <button ng-click="move_back_element(elements.length - $index - 1)" ng-class="{disabled:$last}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-down'></i></button>
-              <button ng-click="move_up_element(elements.length - $index - 1)" ng-class="{disabled:$first}" type='button' class='btn'><i class='glyphicon glyphicon-chevron-up'></i></button>
+              <button ng-click="move_back_element(elements.length - $index - 1)" ng-class="{disabled:$last}" type='button' class='btn'><i class='glyphicon glyphicon-arrow-down'></i></button>
+              <button ng-click="move_up_element(elements.length - $index - 1)" ng-class="{disabled:$first}" type='button' class='btn'><i class='glyphicon glyphicon-arrow-up'></i></button>
               <button ng-click="remove_element(elements.length - $index - 1)" type='button' class='btn btn-danger'><i class='glyphicon glyphicon-trash'></i></button>
             </div>
             <input ng-model="element.name" type="text" class="form-control element_name_input" placeholder="{{ element.type }} name">
@@ -102,7 +102,7 @@
                 <span ng-switch-when="text">
                   text:
                   <div class='form-group'>
-                    <input ng-model="element.text" type="text" class="form-control" ui-focus='$first' ng-change="draw()" placeholder="x">
+                    <input ng-model="element.text" type="text" class="form-control" ui-focus='$first' ng-change="draw()" placeholder="type something">
                   </div>
                   font_size:
                   <div class='form-group'>
@@ -135,7 +135,7 @@
         <div class='row'>
           <pre class='well'>{{ generate_tag() }}</pre>
         </div>
-        <h3>Output</h3>
+        <h3>Preview</h3>
         <div class='row' ng-bind-html="tag_preview()">
         </div>
         <h3>Data</h3>

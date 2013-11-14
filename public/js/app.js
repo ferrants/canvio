@@ -144,14 +144,19 @@ canvio.controller('CanvasControl', function($scope, $sce){
           width: $scope.end_point.x - $scope.start_point.x,
           height: $scope.end_point.y - $scope.start_point.y
         };
+        if (elem_data.width == 0 || elem_data.height == 0){
+          elem_data = false;
+        }
         break;
       case 'circle':
-        elem_data = {
-          type: 'circle',
-          x: $scope.start_point.x,
-          y: $scope.start_point.y,
-          radius: Math.floor(Math.sqrt(($scope.end_point.x - $scope.start_point.x)*($scope.end_point.x - $scope.start_point.x)+($scope.end_point.y - $scope.start_point.y)*($scope.end_point.y - $scope.start_point.y)))
-        };
+        if ($scope.end_point.x - $scope.start_point.x > 0 && $scope.end_point.y - $scope.start_point.y > 0){
+          elem_data = {
+            type: 'circle',
+            x: $scope.start_point.x,
+            y: $scope.start_point.y,
+            radius: Math.floor(Math.sqrt(($scope.end_point.x - $scope.start_point.x)*($scope.end_point.x - $scope.start_point.x)+($scope.end_point.y - $scope.start_point.y)*($scope.end_point.y - $scope.start_point.y)))
+          };
+        }
         break;
       case 'text':
         elem_data = {
