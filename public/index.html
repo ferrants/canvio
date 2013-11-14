@@ -2,12 +2,11 @@
 <!DOCTYPE html>
 <html ng-app='canvio' lang="en">
   <head>
-    <title>canva</title>
+    <title>canvio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/lib/spectrum/spectrum.css" rel="stylesheet" media="screen">
     <link href="/css/style.css" rel="stylesheet" media="screen">
-
 
   </head>
   <body>
@@ -17,8 +16,22 @@
       <div ng-controller="CanvasControl">
         <h1>Canvio</h1>
         <div class='row'>
-          <div id='tag_input_wrapper' class="pull-left">
+          <div id='tag_input_wrapper'>
             <form id='settings_form' class='form-inline' ng-init="fill_color='#000000'; stroke_color='#000000'; fill_enabled=true; stroke_enabled=true; mode='rectangle'; draw();">
+              <div class="btn-group" id='mode_select'>
+                <button type="button" class="btn btn-default"><i class='glyphicon glyphicon-folder-open'></i>&nbsp;&nbsp;Open Template</button>
+                <button type="button" class="btn btn-default"><i class='glyphicon glyphicon-import'></i> Import Product Feed</button>
+              </div>
+              Landing Page
+              <div class='form-group'>
+                  <input ng-model="landing_page" type="text" id='landing_page' value='' class="form-control" placeholder="landing page">
+              </div>
+              <div class="btn-group" id='mode_select'>
+                <button ng-click="draw()" id='settings_form_button' type='button' class='btn btn-primary'>Draw</button>
+                <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-danger'>Clear</button>
+              </div>
+              <br/>
+              <br/>
               <div class="btn-group" id='mode_select'>
                 <button ng-click="set_mode('rectangle')" type="button" class="btn btn-default" ng-class="{active:mode=='rectangle'}"><i class='glyphicon glyphicon-stop'></i></button>
                 <button ng-click="set_mode('circle')" type="button" class="btn btn-default" ng-class="{active:mode=='circle'}"><i class='glyphicon glyphicon-record'></i></button>
@@ -46,19 +59,13 @@
               <div class='form-group'>
                   <input ng-model="height" type="text" id='height' value='' class="form-control" placeholder="height">
               </div>
-
-              <button ng-click="draw()" id='settings_form_button' type='button' class='btn btn-primary'>Draw</button>
-              <button ng-click="clear()" id='settings_form_button' type='button' class='btn btn-danger'>Clear</button>
-
-              <div class='form-group'>
-                  <input ng-model="landing_page" type="text" id='landing_page' value='' class="form-control" placeholder="landing page">
-              </div>
             </form>
             <div>Help: {{ direction }}<br/>{{ mouse_point.x }} - {{ mouse_point.y }}</div>
 
             <div id='tag_input' width="{{ width }}" height="{{ height }}" class="pull-left">
               <canvas id='tag_output' width="{{ width }}" height="{{ height }}" ng-mousedown="mousedown($event)" ng-mouseup="mouseup($event)" ng-mousemove="mousemove($event)" ng-mouseout="mouseout($event)" ng-class="{movable:movable_element !== false}"></canvas>
             </div>
+            <div class="clearfix"></div>
           </div>
         </div>
         <h3>Layers</h3>
@@ -144,6 +151,7 @@
         </div>
 
       </div>
+      Developed by <a target='_blank' href='http://github.com/ferrants'>Matt Ferrante</a>
     </div>
 
     <script src="/lib/jquery/jquery.min.js"></script>

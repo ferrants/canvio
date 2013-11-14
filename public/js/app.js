@@ -154,7 +154,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
     $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
-      if ($scope.mode == 'text'){
+      if (['text', 'img'].indexOf($scope.mode) != -1){
+        if ($scope.mode == 'img' && $scope.times_moved > 1){
+          $scope.elements.pop();
+        }
         add_element($scope.end_point);
       }
     }else{
@@ -170,7 +173,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
         console.log(ev);
         move_element();
       }else{
-        if ($scope.mode != 'text'){
+        if (['text'].indexOf($scope.mode ) == -1){
           if ($scope.times_moved > 1){
             console.log("Popping: " + $scope.times_moved);
             $scope.elements.pop();
