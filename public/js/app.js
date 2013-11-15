@@ -244,8 +244,8 @@ canvio.controller('CanvasControl', function($scope, $sce){
   $scope.load_template = function(template){
     $scope.width = template.width;
     $scope.height = template.height;
-    $scope.elements = template.elements.slice(0);;
-    $scope.draw();
+    $scope.elements = template.elements.slice(0);
+    setTimeout($scope.draw, 500);
   };
 
   $scope.set_template = function(template){
@@ -651,6 +651,16 @@ canvio.controller('CanvasControl', function($scope, $sce){
     });
     $scope.loaded_variant = random_prop($scope.get_selected_products());
     $scope.draw();
+  };
+
+  $scope.save_template = function(){
+    $scope.templates.push({
+      name: "New Template",
+      description: "A saved template",
+      width: $scope.width,
+      height: $scope.height,
+      elements: $scope.elements.slice(0)
+    });
   };
 
   $scope.starting_template = $scope.templates[0];
