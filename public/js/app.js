@@ -273,6 +273,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   
   $scope.debug = function(){
     return JSON.stringify({
+      variant: $scope.loaded_variant,
       fill_enabled: $scope.fill_enabled,
       fill_color: $scope.fill_color,
       stroke_enabled: $scope.stroke_enabled,
@@ -505,6 +506,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   var run_commands = function(commands){
+    chosen_variant = $scope.products[$scope.loaded_variant];
     try {
       eval(commands.join(';'));
     } catch(err) {
@@ -647,7 +649,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
       fill: ($scope.fill_enabled && $scope.fill_color) ? $scope.fill_color : false,
       stroke: ($scope.stroke_enabled && $scope.stroke_color) ? $scope.stroke_color : false
     });
-    chosen_variant = $scope.products[random_prop($scope.get_selected_products())];
+    $scope.loaded_variant = random_prop($scope.get_selected_products());
     $scope.draw();
   };
 
