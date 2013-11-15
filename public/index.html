@@ -175,9 +175,20 @@
         <div class='row'>
           <pre class='well'><textarea class="form-control" rows="10">{{ generate_tag() }}</textarea></pre>
         </div>
-        <h3>Data</h3>
-        <div class='row'>
-          <pre class='well' id='meta'>{{ debug() }}</pre>
+
+        <div class="panel-group" id="accordion">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                  Show Debug Data
+                </a>
+              </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+              <pre class="panel-body well">{{ debug() }}</pre>
+            </div>
+          </div>
         </div>
 
         <div class="modal fade" id="template_modal" tabindex="-1" role="dialog" aria-labelledby="template_modal_label" aria-hidden="true">
