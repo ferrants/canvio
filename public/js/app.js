@@ -96,12 +96,12 @@ canvio.controller('CanvasControl', function($scope, $sce){
   var context = canvas.getContext('2d');
 
   $scope.commands = [];
+  $scope.dynamic_key_mappings = {};
   $scope.movable_element = false;
   $scope.landing_page = "http://www.dataxu.com";
   $scope.direction = "choose a shape to use and start drawing on the canvas below",
   $scope.mouse_down = false;
   $scope.times_moved = 0;
-  $scope.loaded_variant = false
 
   $scope.templates = [
     {
@@ -205,33 +205,6 @@ canvio.controller('CanvasControl', function($scope, $sce){
     "http://www.dataxu.com/wp-content/uploads/2012/09/slide51.jpg"
   ];
 
-  $scope.products = {
-    "a": {
-      name: "Xenocide",
-      description: "Xenocide: 3 (The Ender Quintet)",
-      img_url: "http://ecx.images-amazon.com/images/I/51UvDFCDZEL._SL150_.jpg",
-      selected: false
-    },
-    "b": {
-      name: "Ender's Shadow",
-      description: "Ender's Shadow: 1 (The Shadow Series)",
-      img_url: "http://ecx.images-amazon.com/images/I/51xlILbZLhL._SL150_.jpg",
-      selected: false
-    },
-    "c": {
-      name: "Shadow of the Hegemon",
-      description: "Shadow of the Hegemon: 2 (The Shadow Series)",
-      img_url: "http://ecx.images-amazon.com/images/I/51BGg7K1UpL._SL150_.jpg",
-      selected: false
-    },
-    "d": {
-      name: "Ender in Exile",
-      description: "Ender in Exile: 5 (The Ender Quintet)",
-      img_url: "http://ecx.images-amazon.com/images/I/515UQMm4IEL._SL150_.jpg",
-      selected: false
-    }
-  };
-
   $scope.set_loaded_image = function(image){
     $scope.loaded_image = image;
     if ($scope.images.indexOf(image) == -1){
@@ -273,7 +246,6 @@ canvio.controller('CanvasControl', function($scope, $sce){
   
   $scope.debug = function(){
     return JSON.stringify({
-      variant: $scope.loaded_variant,
       fill_enabled: $scope.fill_enabled,
       fill_color: $scope.fill_color,
       stroke_enabled: $scope.stroke_enabled,
@@ -284,7 +256,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
       elements: $scope.elements,
       commands: $scope.commands,
       mouse_down: $scope.mouse_down,
-      products: $scope.products,
+      dynamic_key_mappings: $scope.dynamic_key_mappings,
       points: {
         start_point: $scope.start_point,
         end_point: $scope.end_point,
@@ -305,8 +277,8 @@ canvio.controller('CanvasControl', function($scope, $sce){
     $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
-      if (['text', 'img'].indexOf($scope.mode) != -1){
-        if ($scope.mode == 'img' && $scope.times_moved > 1){
+      if (['text', 'img', 'dynamic_text', 'dynamic_img'].indexOf($scope.mode) != -1){
+        if (['img', 'dynamic_text', 'dynamic_img'].indexOf($scope.mode) != -1 && $scope.times_moved > 1){
           $scope.elements.pop();
         }
         add_element($scope.end_point);
@@ -377,6 +349,26 @@ canvio.controller('CanvasControl', function($scope, $sce){
           x: $scope.start_point.x,
           y: $scope.start_point.y,
           url: $scope.loaded_image,
+          width: end_point.x - $scope.start_point.x,
+          height: end_point.y - $scope.start_point.y
+        };
+        break;
+      case 'dynamic_text':
+        elem_data = {
+          type: 'dynamic_text',
+          x: $scope.start_point.x,
+          y: $scope.start_point.y,
+          key: "my_text_cookie_variable",
+          font_size: "20",
+          font: "Arial"
+        };
+        break;
+      case 'dynamic_img':
+        elem_data = {
+          type: 'dynamic_img',
+          x: $scope.start_point.x,
+          y: $scope.start_point.y,
+          key: "my_image_cookie_variable",
           width: end_point.x - $scope.start_point.x,
           height: end_point.y - $scope.start_point.y
         };
@@ -456,10 +448,10 @@ canvio.controller('CanvasControl', function($scope, $sce){
     'dynamic_text': function(elem){
       var commands = ["context.font = '" + elem.font_size + "px " + elem.font + "'"]
       if (elem.fill){
-        commands.push("context.fillText(chosen_variant['" + elem.dynamic_map + "'], " + elem.x + ", " + elem.y + ")");
+        commands.push("context.fillText(dynamic_key_map['" + elem.key + "'], " + elem.x + ", " + elem.y + ")");
       }
       if (elem.stroke){
-        commands.push("context.strokeText(chosen_variant['" + elem.dynamic_map + "'], " + elem.x + ", " + elem.y + ")");
+        commands.push("context.strokeText(dynamic_key_map['" + elem.key + "'], " + elem.x + ", " + elem.y + ")");
       }
       return commands;
     },
@@ -469,7 +461,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
       var commands = [
         "var img"+img_num+" = new Image",
         "img"+img_num+".onload = function(){" + img_fn + "}",
-        "img"+img_num+".src = chosen_variant['" + elem.dynamic_map + "']",
+        "img"+img_num+".src = dynamic_key_map['" + elem.key + "']",
         // img_fn
       ];
       return commands;
@@ -506,7 +498,9 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   var run_commands = function(commands){
-    chosen_variant = $scope.products[$scope.loaded_variant];
+    var dynamic_keys = $scope.get_dynamic_keys();
+
+    dynamic_key_map = $scope.dynamic_key_mappings;
     try {
       eval(commands.join(';'));
     } catch(err) {
@@ -550,9 +544,19 @@ canvio.controller('CanvasControl', function($scope, $sce){
     }
   };
 
+  $scope.get_dynamic_keys = function(){
+    var keys = [];
+    for (var i in $scope.elements){
+      if ($scope.elements[i].key && keys.indexOf($scope.elements[i].key) == -1){
+        keys.push($scope.elements[i].key);
+      }
+    }
+    return keys;
+  };
+
   $scope.generate_tag = function(){
     var r = "";
-    var selected_products = $scope.get_selected_products();
+    var dynamic_keys = $scope.get_dynamic_keys();
     // r += "<html><head></head><body>";
     r += "<a target='_blank' href='"+ $scope.landing_page +"'>\n";
     r += "<canvas id='canvas' width='"+ $scope.width +"' height='"+ $scope.height +"'></canvas>\n";
@@ -560,24 +564,17 @@ canvio.controller('CanvasControl', function($scope, $sce){
     r += "<script>\n";
     r += "var canvas = document.getElementById('canvas');\n";
     r += "var context = canvas.getContext('2d');\n";
-    if (obj_size(selected_products) > 0){
+    if (dynamic_keys.length > 0){
+      r += "var dynamic_keys = "+ JSON.stringify(dynamic_keys) +";\n"
+      r += "var dynamic_key_map = {};\n"
       r += "var buster = Math.floor((Math.random()*100000)+1);\n";
       r += "dx_cookies='';\n";
       r += "document.write('<scr' + 'ipt src=\"http://w55c.net/ct/get_cookies.js?' + buster + '\"></scr' + 'ipt>');\n";
       r += "window.onload = function(){\n"
       r += "  var cookies = dx_cookies.split('; ');\n";
-      r += "  var chosen_variant_key = false;\n";
       r += "  for (var i in cookies){\n";
       r += "    var c_v = cookies[i].split('=')\n";
-      r += "    if (c_v[0].indexOf('variant') == 0){ chosen_variant_key = c_v[1]};\n";
-      r += "  }\n";
-      r += "  var variants = " + JSON.stringify(selected_products) + ";\n";
-      r += "  if (chosen_variant_key in variants){\n";
-      r += "    chosen_variant = variants[chosen_variant_key];\n";
-      r += "  }else{\n";
-      // r += "    chosen_variant = variants['a'];\n";
-      r += "    var random_prop = function(obj) { var result; var count = 0; for (var prop in obj){if (Math.random() < 1/++count){result = prop;}} return result;};\n";
-      r += "    chosen_variant = variants[random_prop(variants)];\n";
+      r += "    if (dynamic_keys.indexOf(c_v[0]) != -1){ dynamic_key_map[c_v[0]] = c_v[1]};\n";
       r += "  }\n";
       r += $scope.commands.join(';\n');
       r += "}\n";
@@ -603,55 +600,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
     return $scope.images;
   };
 
-  $scope.get_products = function(){
-    return $scope.products;
-  };
 
-  $scope.get_selected_products = function(){
-    var selected = {};
-    for (var i in $scope.products){
-      if ($scope.products[i].selected){
-        selected[i] = $scope.products[i];
-      }
-    }
-    return selected;
-  };
-
-  $scope.insert_product_tags = function(){
-    $scope.elements.push({
-      name: 'Dynamic Image',
-      type: 'dynamic_img',
-      dynamic_map: 'img_url',
-      x: 20,
-      y: 20,
-      width: 0,
-      height: 0
-    });
-    $scope.elements.push({
-      name: 'Dynamic Description',
-      type: 'dynamic_text',
-      dynamic_map: 'description',
-      x: 20,
-      y: 20,
-      font_size: "20",
-      font: "Arial",
-      fill: ($scope.fill_enabled && $scope.fill_color) ? $scope.fill_color : false,
-      stroke: ($scope.stroke_enabled && $scope.stroke_color) ? $scope.stroke_color : false
-    });
-    $scope.elements.push({
-      name: 'Dynamic Name',
-      type: 'dynamic_text',
-      dynamic_map: 'name',
-      x: 20,
-      y: 20,
-      font_size: "26",
-      font: "Arial",
-      fill: ($scope.fill_enabled && $scope.fill_color) ? $scope.fill_color : false,
-      stroke: ($scope.stroke_enabled && $scope.stroke_color) ? $scope.stroke_color : false
-    });
-    $scope.loaded_variant = random_prop($scope.get_selected_products());
-    $scope.draw();
-  };
 
   $scope.save_template = function(){
     $scope.templates.push({

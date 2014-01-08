@@ -1,0 +1,33 @@
+<a target='_blank' href='http://www.dataxu.com'>
+<canvas id='canvas' width='300' height='250'></canvas>
+</a>
+<script>
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+var dynamic_keys = ["my_text","my_img"];
+var dynamic_key_map = {};
+var buster = Math.floor((Math.random()*100000)+1);
+dx_cookies='';
+document.write('<scr' + 'ipt src="http://w55c.net/ct/get_cookies.js?' + buster + '"></scr' + 'ipt>');
+window.onload = function(){
+  var cookies = dx_cookies.split('; ');
+  for (var i in cookies){
+    var c_v = cookies[i].split('=')
+    if (dynamic_keys.indexOf(c_v[0]) != -1){ dynamic_key_map[c_v[0]] = c_v[1]};
+  }
+context.fillStyle = '#ffffff';
+context.strokeStyle = '#000000';
+context.beginPath();
+context.fillRect(0,0,300,250);
+context.fillStyle = '#000000';
+context.strokeStyle = '#000000';
+context.font = '20px Arial';
+context.fillText(dynamic_key_map['my_text'], 59, 62);
+context.strokeText(dynamic_key_map['my_text'], 59, 62);
+context.fillStyle = '#000000';
+context.strokeStyle = '#000000';
+var img42540 = new Image;
+img42540.onload = function(){context.drawImage(img42540, 85, 119)};
+img42540.src = dynamic_key_map['my_img']}
+
+</script>
