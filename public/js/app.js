@@ -75,6 +75,23 @@ canvio.directive('uiKeydown', function() {
   };
 });
 
+canvio.directive('canviovas', function(){
+  return function(scope, element, attrs) {
+      element.on('mouseup', function(event) {
+        scope.mouseup(event)
+      })
+      element.on('mousedown', function(event) {
+        scope.mousedown(event)
+      })
+      element.on('mousemove', function(event) {
+        scope.mousemove(event)
+      })
+      element.on('mouseout', function(event) {
+        scope.mouseout(event)
+      })
+    }
+})
+
 canvio.directive('uiFocus', function() {
     return function(scope, element, attrs) {
        scope.$watch(attrs.uiFocus, 
@@ -266,6 +283,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
   
   $scope.mousedown = function(ev){
+    console.log("down")
     ev.originalEvent.preventDefault();
     $scope.mouse_down = true;
     $scope.start_point = {x: ev.offsetX, y: ev.offsetY};
@@ -274,6 +292,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
   
   $scope.mouseup = function(ev){
+    console.log("up")
     $scope.mouse_down = false;
     $scope.end_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.movable_element === false){
@@ -289,6 +308,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   $scope.mousemove = function(ev){
+    console.log("move")
     $scope.times_moved += 1;
     $scope.mouse_point = {x: ev.offsetX, y: ev.offsetY};
     if ($scope.mouse_down){
@@ -306,6 +326,7 @@ canvio.controller('CanvasControl', function($scope, $sce){
   };
 
   $scope.mouseout = function(ev){
+    console.log("mouseout")
     $scope.mouse_down = false;
   };
 
